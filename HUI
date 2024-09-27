@@ -1,0 +1,82 @@
+library(readxl)
+library(openxlsx)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# Define a list of file paths
+file_list <- c("1.xlsx", "2.xlsx", "3.xlsx", "4.xlsx", "5.xlsx", "6.xlsx", "7.xlsx")
+
+# Read all files and extract data.
+all_tables <- list() 
+
+for (i in seq_along(file_list)) {
+  file <- file_list[i]
+  
+  # Read the file's "Table 5" worksheet and keep all rows
+  table_5 <- read_excel(file, sheet = "Table 5")
+  
+  # Store it in a list
+  all_tables[[i]] <- table_5
+}
+
+# Define the list of worksheet names after the data has been read.
+sheet_names <- c("January", "February", "March", "April", "May", "June", "July")
+
+# Create a new Excel file
+output_file <- "final_combined_table_5.xlsx"
+wb <- createWorkbook()
+
+# Write the extracted data into different worksheets in a new file
+for (i in seq_along(all_tables)) {
+  
+  addWorksheet(wb, sheet_names[i])
+  
+  writeData(wb, sheet = sheet_names[i], all_tables[[i]])
+}
+
+saveWorkbook(wb, output_file, overwrite = TRUE)
+
+# View the first 15 rows of data in the first worksheet
+table_preview <- read.xlsx(output_file, sheet = 1)
+print("Preview of the first sheet (first 10 rows):")
+print(head(table_preview, 15))
+
+all_data <- list()
+
+# Loop through each already written worksheet, extracting data from rows 7 to 11
+for (i in seq_along(sheet_names)) {
+  
+  table_5 <- read.xlsx(output_file, sheet = sheet_names[i])
+  
+  # Extract data from rows 7 to 11
+  filtered_rows <- table_5[7:11, ]
+  
+  # Add a column for the month to mark the data source
+  filtered_rows$Month <- sheet_names[i]
+  
+  # Add the data for each month to the list
+  all_data[[i]] <- filtered_rows
+}
+
+# Create a "Filtered_Data" worksheet and write the merged data into it
+wb <- loadWorkbook(output_file)  
+addWorksheet(wb, "Filtered_Data")
+
+combined_data <- do.call(rbind, all_data)
+print(head(combined_data, 10))
+
+# Change the column names to 2020-2024
+colnames(combined_data)[3] <- "2020"
+colnames(combined_data)[4] <- "2021"
+colnames(combined_data)[5] <- "2022"
+colnames(combined_data)[6] <- "2023"
+colnames(combined_data)[7] <- "2024"
+
+# Delete the first column
+combined_data <- combined_data[, -1]
+writeData(wb, sheet = "Filtered_Data", combined_data)
+saveWorkbook(wb, output_file, overwrite = TRUE)
+
+filtered_data <- read.xlsx(output_file, sheet = "Filtered_Data")
+print(head(filtered_data, 10))
