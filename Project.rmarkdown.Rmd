@@ -75,7 +75,7 @@ workdf$Date <- as.Date(paste(workdf$year, workdf$month, "01", sep = "-"),
 ```{r}
 library(dplyr)
 
-# Summarize the total monthly movements
+# Summarise the total monthly movements
 monthly_data <- workdf %>%
   group_by(year, month) %>%
   summarise(Total_Movements = sum(total_movements, na.rm = TRUE), 
