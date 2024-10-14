@@ -44,6 +44,15 @@ legend("topright", legend = c("Visitors Visa", "Total Visitors"),
 
 #recovery percentage
 
+ts_df_total$Visitor <- as.numeric(ts_df_total$Visitor)
+annual_visitors <- aggregate(Visitor ~ Year, data = ts_df_total, sum)
+annual_visitors_sorted <- annual_visitors[order(-annual_visitors$Visitor), ]
+print(annual_visitors_sorted)
+
+visitors_2018 <- annual_visitors[annual_visitors$Year == 2018, "Visitor"]
+visitors_2023 <- annual_visitors[annual_visitors$Year == 2023, "Visitor"]
+recovery_rate <- (visitors_2023 / visitors_2018) * 100
+recovery_rate
 
 # lm on season (whole time span)
 get_season <- function(month) {
